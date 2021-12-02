@@ -5,9 +5,7 @@ import { createNewGame, generateCode, getExpiredGames } from "./utils";
 
 const wss = new WebSocketServer({port: PORT});
 
-
-
-// a in memory set of current games
+// a in-memory set of current games
 const currentGames: Games = new Map();
 
 // end any expired games
@@ -24,7 +22,8 @@ setInterval(() => {
     })
 }, 1000);
 
-
+// TODO: add types for messages and refactor sending them
+// TODO: handle games with GPT-3
 wss.on('connection', (ws) => {
     ws.on('message', (msg) => {
         const message = JSON.parse(msg.toString());
