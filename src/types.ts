@@ -1,9 +1,9 @@
-const WebSocket = require("ws");
+import type WebSocket from "ws";
 
 export type Game = {
     withMachine: boolean;
-    humanPlayer?: any;
-    evaluator: any;
+    humanPlayer?: WebSocket;
+    evaluator: WebSocket;
     startedAt: Date;
 }
 export type GameCode = string;

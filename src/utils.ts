@@ -1,5 +1,5 @@
 import { Game, GameCode } from './types';
-// import WebSocket from "ws";
+import type WebSocket from "ws";
 
 // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 function makeid(length) {
@@ -15,7 +15,7 @@ function makeid(length) {
 
 export const generateCode = (): GameCode => makeid(7);
 
-export const createNewGame = (evalutatorWs: any): Game => {
+export const createNewGame = (evalutatorWs: WebSocket): Game => {
     //const withMachine = Math.random() > 0.5; // FIXME: uncomment later
     const withMachine = false;
     const startedAt = new Date();

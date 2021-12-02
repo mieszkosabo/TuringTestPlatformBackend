@@ -1,6 +1,6 @@
 import { WebSocketServer } from "ws";
 import { PORT } from "./const";
-import { GameCode, Games } from "./types";
+import { Games } from "./types";
 import { createNewGame, generateCode } from "./utils";
 
 const wss = new WebSocketServer({port: PORT});
@@ -41,8 +41,9 @@ wss.on('connection', (ws) => {
             }
             case "MESSAGE": {
                 const { code, text, fromEvaluator } = message?.payload;
-                if (code) {
-                    const { withMachine, evaluator, humanPlayer } = currentGames.get(code);
+                const game = currentGames.get(code);
+                if (game) {
+                    const { withMachine, evaluator, humanPlayer } = game;
 
                     if (fromEvaluator && !withMachine) {
                         humanPlayer.send(JSON.stringify({ message: "NEW_MESSAGE", payload: { text }}));
