@@ -22,9 +22,10 @@ Client and server send all messages in the following form:
 ### Client messages
 
 #### INIT
-- no payload
+- withHuman: maybe boolean.
 
 This message inits a turing test. 
+If withHuman flag is present then server will deterministically connect evaluator with human player (eg for testing purposes).
 
 #### JOIN
 - code: string

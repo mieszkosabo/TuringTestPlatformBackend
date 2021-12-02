@@ -31,8 +31,9 @@ wss.on('connection', (ws) => {
         console.log(message);
         switch (message?.message) {
             case "INIT": {
+                const withHuman = message.payload?.withHuman;
                 const code = generateCode();
-                const game = createNewGame(ws);
+                const game = createNewGame(ws, withHuman);
 
                 currentGames.set(code, game);
 

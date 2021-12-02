@@ -16,9 +16,8 @@ function makeid(length) {
 
 export const generateCode = (): GameCode => makeid(7);
 
-export const createNewGame = (evalutatorWs: WebSocket): Game => {
-    //const withMachine = Math.random() > 0.5; // FIXME: uncomment later
-    const withMachine = false;
+export const createNewGame = (evalutatorWs: WebSocket, withHuman?: boolean): Game => {
+    const withMachine = withHuman ? false : Math.random() > 0.5; 
     const initedAt = new Date();
 
     return {

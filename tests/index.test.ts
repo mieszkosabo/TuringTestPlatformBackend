@@ -31,7 +31,7 @@ describe("api tests", () => {
 
         // evaluator inits a game
         wsEvaluator.on("open", () => {
-            wsEvaluator.send(JSON.stringify({ message: 'INIT'}));
+            wsEvaluator.send(JSON.stringify({ message: 'INIT', payload: { withHuman: true }}));
         })
 
         wsEvaluator.on("message", (data) => {
@@ -67,7 +67,7 @@ describe("api tests", () => {
 
         // evaluator inits a game
         wsEvaluator.on("open", () => {
-            wsEvaluator.send(JSON.stringify({ message: 'INIT'}));
+            wsEvaluator.send(JSON.stringify({ message: 'INIT', payload: { withHuman: true }}));
         })
 
         wsEvaluator.on("message", (data) => {
