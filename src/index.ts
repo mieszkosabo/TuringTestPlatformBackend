@@ -1,7 +1,7 @@
 import { WebSocketServer } from "ws";
 import { PORT } from "./const";
 import { Games } from "./types";
-import { createNewGame, generateCode } from "./utils";
+import { createNewGame, generateCode, getExpiredGames } from "./utils";
 
 const wss = new WebSocketServer({port: PORT});
 
@@ -10,7 +10,19 @@ const wss = new WebSocketServer({port: PORT});
 // a in memory set of current games
 const currentGames: Games = new Map();
 
-
+// end any expired games
+setInterval(() => {
+    const expiredGames = getExpiredGames(currentGames);
+    expiredGames.forEach(([code, { evaluator, humanPlayer, withMachine }]) => {
+        evaluator.send(JSON.stringify({ message: "GAME_END", payload: { wasMachine: withMachine}}));
+        evaluator.close();
+        if (humanPlayer) {
+            humanPlayer.send(JSON.stringify({ message: "GAME_END", payload: { wasMachine: withMachine}}));
+            humanPlayer.close();
+        }
+        currentGames.delete(code);
+    })
+}, 1000);
 
 
 wss.on('connection', (ws) => {
@@ -32,8 +44,8 @@ wss.on('connection', (ws) => {
                 const code = message?.payload?.code;
                 if (code) {
                     const game = currentGames.get(code);
-                    const {withMachine, evaluator } = game;
-                    currentGames.set(code, {...game, humanPlayer: ws});
+                    const { withMachine, evaluator } = game;
+                    currentGames.set(code, {...game, humanPlayer: ws, startedAt: new Date() }); // note that we update the startedAt
                     evaluator.send(JSON.stringify({ message: "GAME_START", payload: {}}));
                     ws.send(JSON.stringify({ message: "GAME_START", payload: { withMachine }}));
                 }
