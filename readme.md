@@ -1,3 +1,11 @@
+## Scripts
+
+```bash
+yarn       # install dependencies
+yarn dev   # run project in development mode (hot reloading)
+yarn start # run project
+yarn test # run tests
+```
 
 ## Definitions
 
