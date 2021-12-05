@@ -1,33 +1,23 @@
 import { WebSocketServer } from "ws";
 import { PORT } from "./const";
-import { Games } from "./types";
-import { createNewGame, generateCode, getExpiredGames } from "./utils";
+import { Games, ServerMessage } from "./types";
+import { createNewGame, generateCode, removeExpiredGames, parseMessage, sendMessage } from "./utils";
 
 const wss = new WebSocketServer({port: PORT});
 
-// a in-memory set of current games
+// an in-memory set of current games
 const currentGames: Games = new Map();
 
 // end any expired games
 setInterval(() => {
-    const expiredGames = getExpiredGames(currentGames);
-    expiredGames.forEach(([code, { evaluator, humanPlayer, withMachine }]) => {
-        evaluator.send(JSON.stringify({ message: "GAME_END", payload: { wasMachine: withMachine}}));
-        evaluator.close();
-        if (humanPlayer) {
-            humanPlayer.send(JSON.stringify({ message: "GAME_END", payload: { wasMachine: withMachine}}));
-            humanPlayer.close();
-        }
-        currentGames.delete(code);
-    })
+    removeExpiredGames(currentGames);
 }, 1000);
 
-// TODO: add types for messages and refactor sending them
+// TODO: add linting
 // TODO: handle games with GPT-3
 wss.on('connection', (ws) => {
     ws.on('message', (msg) => {
-        const message = JSON.parse(msg.toString());
-        console.log(message);
+        const message = parseMessage(msg);
         switch (message?.message) {
             case "INIT": {
                 const withHuman = message.payload?.withHuman;
@@ -35,9 +25,7 @@ wss.on('connection', (ws) => {
                 const game = createNewGame(ws, withHuman);
 
                 currentGames.set(code, game);
-
-                ws.send(JSON.stringify({ message: "NEW_GAME", payload: { code }}));
-
+                sendMessage(ws, { message: "NEW_GAME", payload: { code }});
                 break;
             }
             case "JOIN": {
@@ -46,8 +34,8 @@ wss.on('connection', (ws) => {
                     const game = currentGames.get(code);
                     const { withMachine, evaluator } = game;
                     currentGames.set(code, {...game, humanPlayer: ws, startedAt: new Date() }); // note that we update the startedAt
-                    evaluator.send(JSON.stringify({ message: "GAME_START", payload: {}}));
-                    ws.send(JSON.stringify({ message: "GAME_START", payload: { withMachine }}));
+                    sendMessage(evaluator, { message: "GAME_START", payload: {}});
+                    sendMessage(ws, { message: "GAME_START", payload: { withMachine }});
                 }
                 break;
             }
@@ -56,20 +44,16 @@ wss.on('connection', (ws) => {
                 const game = currentGames.get(code);
                 if (game) {
                     const { withMachine, evaluator, humanPlayer } = game;
-
+                    const newMessage: ServerMessage = { message: "NEW_MESSAGE", payload: { text }};
                     if (fromEvaluator && !withMachine) {
-                        humanPlayer.send(JSON.stringify({ message: "NEW_MESSAGE", payload: { text }}));
+                        sendMessage(humanPlayer, newMessage);
                     }
                     if (!fromEvaluator) {
-                        evaluator.send(JSON.stringify({ message: "NEW_MESSAGE", payload: { text }}));
+                        sendMessage(evaluator, newMessage);
                     }
                 }
-
                 break;
             }
-            default:
-                console.log("default hit", message?.message)
-                break;
         }
     })
 

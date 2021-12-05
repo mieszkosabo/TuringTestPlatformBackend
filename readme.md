@@ -6,6 +6,7 @@ yarn dev   # run project in development mode (hot reloading)
 yarn start # run project
 yarn test  # run tests
 ```
+NOTE: before running tests make sure that server is running!
 
 ## Definitions
 
@@ -44,7 +45,7 @@ Message's payload has to have a 'code' field with a code previously sent by a se
 ##### MESSAGE
 - code: string
 - text: string
-- fromEvalutor: boolean
+- fromEvaluator: boolean
 
 Sent when either evaluator or human player send message.
 
@@ -68,6 +69,6 @@ Sent from human player or machine (depending on who was randomly chosen) to eval
 or from evaluator to human player.
 
 #### GAME_END
-- was_machine: boolean
+- wasMachine: boolean
 
 Sent when a game finishes, the flag in payload informs whether the evaluator was talking to a machine or a human player.

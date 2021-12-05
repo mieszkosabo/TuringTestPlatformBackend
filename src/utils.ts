@@ -1,4 +1,4 @@
-import { Game, GameCode, Games } from './types';
+import { ClientMessage, Game, GameCode, Games, ServerMessage } from './types';
 import type WebSocket from "ws";
 import { NOT_STARTED_GAME_TIMEOUT, TEST_DURATION } from './const';
 
@@ -37,4 +37,26 @@ export const getExpiredGames = (games: Games) => {
                 : currDate.getTime() - initedAt.getTime() >= NOT_STARTED_GAME_TIMEOUT
             )
         )
+};
+
+export const parseMessage = (msg: WebSocket.RawData): ClientMessage => (
+    JSON.parse(msg.toString())
+);
+
+export const sendMessage = (receiver: WebSocket, msg: ServerMessage): void => {
+    receiver.send(JSON.stringify(msg));
+};
+
+export const removeExpiredGames = (currentGames: Games) => {
+    const expiredGames = getExpiredGames(currentGames);
+    expiredGames.forEach(([code, { evaluator, humanPlayer, withMachine }]) => {
+        const endMsg: ServerMessage = { message: "GAME_END", payload: { wasMachine: withMachine}};
+        sendMessage(evaluator, endMsg);
+        evaluator.close();
+        if (humanPlayer) {
+            sendMessage(humanPlayer, endMsg);
+            humanPlayer.close();
+        }
+        currentGames.delete(code);
+    })
 };
