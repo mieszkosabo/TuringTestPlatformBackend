@@ -19,7 +19,6 @@ setInterval(() => {
   removeExpiredGames(currentGames);
 }, 1000);
 
-// TODO: add linting
 // TODO: handle games with GPT-3
 wss.on("connection", (ws) => {
   ws.on("message", (msg) => {
