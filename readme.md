@@ -6,7 +6,7 @@ yarn dev   # run project in development mode (hot reloading)
 yarn start # run project
 yarn test  # run tests
 ```
-NOTE: before running tests make sure that server is running!
+🚨 **NOTE**: before running tests make sure that server is running!
 
 ## Definitions
 
@@ -42,12 +42,19 @@ If withHuman flag is present then server will deterministically connect evaluato
 This message informs the server that the human player is ready to start.
 Message's payload has to have a 'code' field with a code previously sent by a server.
 
-##### MESSAGE
+#### MESSAGE
 - code: string
 - text: string
 - fromEvaluator: boolean
 
 Sent when either evaluator or human player send message.
+
+#### RECONNECT
+- code: string
+- isEvaluator: boolean
+
+Sent by Client every time they have to create a new connection, for example because they
+reloaded the website. 
 
 ### Server messages
 
@@ -72,3 +79,8 @@ or from evaluator to human player.
 - wasMachine: boolean
 
 Sent when a game finishes, the flag in payload informs whether the evaluator was talking to a machine or a human player.
+
+#### MESSAGE_HISTORY
+- messages: [{ text: string; fromEvaluator: boolean; }]
+
+Sent to Client after 'RECONNECT' message, so that they don't lose messages.
