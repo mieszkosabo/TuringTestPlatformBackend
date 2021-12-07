@@ -20,13 +20,14 @@ export const createNewGame = (
   evalutatorWs: WebSocket,
   withHuman?: boolean
 ): Game => {
-  const withMachine = withHuman != null ? withHuman : Math.random() > 0.5;
+  const withMachine = withHuman != null ? !withHuman : Math.random() > 0.5;
   const initedAt = new Date();
 
   return {
     evaluator: evalutatorWs,
     withMachine,
     initedAt,
+    messages: [],
   };
 };
 

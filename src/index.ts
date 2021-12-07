@@ -1,6 +1,6 @@
 import { WebSocketServer } from "ws";
 import { PORT } from "./const";
-import { Games, ServerMessage } from "./types";
+import { GameMessage, Games, ServerMessage } from "./types";
 import {
   createNewGame,
   generateCode,
@@ -21,6 +21,7 @@ setInterval(() => {
 
 // TODO: handle games with GPT-3
 wss.on("connection", (ws) => {
+  console.log("new connection");
   ws.on("message", (msg) => {
     const message = parseMessage(msg);
     switch (message?.message) {
@@ -52,7 +53,8 @@ wss.on("connection", (ws) => {
         const { code, text, fromEvaluator } = message?.payload;
         const game = currentGames.get(code);
         if (game) {
-          const { withMachine, evaluator, humanPlayer } = game;
+          const { withMachine, evaluator, humanPlayer, messages } = game;
+          const newGameMessage: GameMessage = { text, fromEvaluator };
           const newMessage: ServerMessage = {
             message: "NEW_MESSAGE",
             payload: { text },
@@ -63,7 +65,26 @@ wss.on("connection", (ws) => {
           if (!fromEvaluator) {
             sendMessage(evaluator, newMessage);
           }
+          currentGames.set(code, {
+            ...game,
+            messages: [...messages, newGameMessage],
+          });
         }
+        break;
+      }
+      case "RECONNECT": {
+        console.log("reconnect");
+        const { code, isEvaluator } = message?.payload;
+        const game = currentGames.get(code);
+        currentGames.set(code, {
+          ...game,
+          [isEvaluator ? "evaluator" : "humanPlayer"]: ws,
+        });
+
+        sendMessage(ws, {
+          message: "MESSAGE_HISTORY",
+          payload: { messages: game.messages },
+        });
         break;
       }
     }
