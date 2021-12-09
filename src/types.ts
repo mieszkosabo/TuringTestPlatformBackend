@@ -9,7 +9,7 @@ export type Game = {
   withMachine: boolean;
   humanPlayer?: WebSocket;
   evaluator: WebSocket;
-  startedAt?: Date;
+  endTime?: number;
   initedAt: Date;
   messages: GameMessage[];
 };
@@ -29,6 +29,7 @@ export type ServerMessage =
       message: "GAME_START";
       payload: {
         withMachine?: boolean;
+        endTime: number;
       };
     }
   | {

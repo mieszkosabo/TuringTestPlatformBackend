@@ -33,9 +33,9 @@ export const createNewGame = (
 
 export const getExpiredGames = (games: Games) => {
   const currDate = new Date();
-  return Array.from(games.entries()).filter(([code, { startedAt, initedAt }]) =>
-    startedAt
-      ? currDate.getTime() - startedAt.getTime() >= TEST_DURATION
+  return Array.from(games.entries()).filter(([code, { endTime, initedAt }]) =>
+    endTime
+      ? currDate.getTime() - endTime >= 0
       : currDate.getTime() - initedAt.getTime() >= NOT_STARTED_GAME_TIMEOUT
   );
 };

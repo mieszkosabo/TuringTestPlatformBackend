@@ -1,5 +1,5 @@
 import { WebSocketServer } from "ws";
-import { PORT } from "./const";
+import { PORT, TEST_DURATION } from "./const";
 import { GameMessage, Games, ServerMessage } from "./types";
 import {
   createNewGame,
@@ -39,13 +39,21 @@ wss.on("connection", (ws) => {
         if (code) {
           const game = currentGames.get(code);
           const { withMachine, evaluator } = game;
+          const endTime = new Date().getTime() + TEST_DURATION;
           currentGames.set(code, {
             ...game,
             humanPlayer: ws,
-            startedAt: new Date(),
-          }); // note that we update the startedAt
-          sendMessage(evaluator, { message: "GAME_START", payload: {} });
-          sendMessage(ws, { message: "GAME_START", payload: { withMachine } });
+            endTime,
+          });
+
+          sendMessage(evaluator, {
+            message: "GAME_START",
+            payload: { endTime },
+          });
+          sendMessage(ws, {
+            message: "GAME_START",
+            payload: { withMachine, endTime },
+          });
         }
         break;
       }
