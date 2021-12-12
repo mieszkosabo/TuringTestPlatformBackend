@@ -1,4 +1,5 @@
 import { WebSocketServer } from "ws";
+import { getAnswerFromBot } from "./chatbot";
 import { PORT, TEST_DURATION } from "./const";
 import { GameMessage, Games, ServerMessage } from "./types";
 import {
@@ -7,6 +8,7 @@ import {
   removeExpiredGames,
   parseMessage,
   sendMessage,
+  wait,
 } from "./utils";
 
 const wss = new WebSocketServer({ port: PORT });
@@ -22,7 +24,7 @@ setInterval(() => {
 // TODO: handle games with GPT-3
 wss.on("connection", (ws) => {
   console.log("new connection");
-  ws.on("message", (msg) => {
+  ws.on("message", async (msg) => {
     const message = parseMessage(msg);
     switch (message?.message) {
       case "INIT": {
@@ -67,15 +69,35 @@ wss.on("connection", (ws) => {
             message: "NEW_MESSAGE",
             payload: { text },
           };
+          const updatedMessages = [...messages, newGameMessage];
           if (fromEvaluator && !withMachine) {
+            // evaluator -> humanPlayer
             sendMessage(humanPlayer, newMessage);
+          } else if (fromEvaluator && withMachine) {
+            // evaluator -> machine
+            console.log(updatedMessages);
+            const messageFromMachine = await getAnswerFromBot(updatedMessages);
+            console.log(messageFromMachine);
+
+            // ~10-20 seconds delay
+            await wait(5_000);
+
+            // machine -> evaluator
+            sendMessage(evaluator, {
+              message: "NEW_MESSAGE",
+              payload: { text: messageFromMachine.text },
+            });
+
+            updatedMessages.push(messageFromMachine);
           }
           if (!fromEvaluator) {
+            // humanPlayer -> evaluator
             sendMessage(evaluator, newMessage);
           }
+
           currentGames.set(code, {
             ...game,
-            messages: [...messages, newGameMessage],
+            messages: updatedMessages,
           });
         }
         break;

@@ -8,6 +8,7 @@ module.exports = {
     "react/jsx-props-no-spreading": "off",
     "react/display-name": "off",
     "import/extensions": "off",
+    "compat/compat": "off",
   },
   parserOptions: {
     ecmaVersion: 2020,

@@ -63,3 +63,6 @@ export const removeExpiredGames = (currentGames: Games) => {
     currentGames.delete(code);
   });
 };
+
+export const wait = (timeToWaitInMs: number) =>
+  new Promise((resolve) => setTimeout(resolve, timeToWaitInMs));
