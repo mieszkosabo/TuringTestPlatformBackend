@@ -79,8 +79,8 @@ wss.on("connection", (ws) => {
             const messageFromMachine = await getAnswerFromBot(updatedMessages);
             console.log(messageFromMachine);
 
-            // ~10-20 seconds delay
-            await wait(5_000);
+            // ~ 5-15 seconds delay to make the timing more natural
+            await wait(Math.random() * (15_000 - 5_000) + 5_000);
 
             // machine -> evaluator
             sendMessage(evaluator, {
